@@ -1,6 +1,8 @@
 import { LegendList, LegendListRef } from "@legendapp/list";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button, StyleSheet, Text, View, ViewStyle, ViewToken } from "react-native";
+
+let ids = 0;
 
 interface Item {
   id: string;
@@ -8,9 +10,10 @@ interface Item {
   type: 'divider' | 'item';
 }
 
-const data = generateData(200);
+const defaultData = generateData(200);
 
 export default function ListScreen() {
+  const [data, setData] = useState<Item[]>(defaultData);
   const listRef = useRef<LegendListRef>(null);
 
   const onTouchStart = useCallback((index: number) => {
@@ -43,6 +46,10 @@ export default function ListScreen() {
     listRef.current?.scrollToIndex({ index: data.length-10, animated: true });
   }, []);
 
+  const scrollToEnd = useCallback(() => {
+    listRef.current?.scrollToEnd({ animated: true });
+  }, []);
+
   const keyExtractor = useCallback((item: Item) => item.id, []);
   const getItemType = useCallback((item: Item) => item.type, []);
 
@@ -50,8 +57,7 @@ export default function ListScreen() {
     return 200;
   }, []);
 
-  const getFixedItemSize = useCallback((index: number) => {
-    const item = data[index];
+  const getFixedItemSize = useCallback((index: number, item: Item) => {
     if(item.type === 'divider') {
       return 1;
     }
@@ -64,6 +70,23 @@ export default function ListScreen() {
     changed: ViewToken<Item>[];
   }) => {
     console.log('onViewableItemsChanged', info.viewableItems.map(item => item.item.id));
+  }, []);
+
+  const addItem = useCallback(() => {
+    ids++;
+
+    const newDivider:Item = {
+      id: `new-divider-${ids.toString()}`,
+      height: 1,
+      type: 'divider',
+    }
+
+    const newItem:Item = {
+      id: `new-item-${ids.toString()}`,
+      height: Math.round(Math.random() * 500 + 100),
+      type: 'item',
+    }
+    setData(prev => [...prev, newDivider, newItem]);
   }, []);
 
   return (
@@ -83,9 +106,15 @@ export default function ListScreen() {
         initialContainerPoolRatio={10}
         maintainVisibleContentPosition={true}
         onViewableItemsChanged={onViewableItemsChanged}
+        maintainScrollAtEnd={true}
+        maintainScrollAtEndThreshold={10000}
       />
 
-      <Button onPress={debug} title="Test" />
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <Button onPress={debug} title="Test" />
+        <Button onPress={scrollToEnd} title="Scroll to end" />
+        <Button onPress={addItem} title="Add item" />
+      </View>
     </View>
   );
 }
