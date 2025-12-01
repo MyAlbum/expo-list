@@ -34,11 +34,13 @@ export default function ListScreen() {
   }, [onTouchStart]);
 
   const debug = useCallback(() => {
-    const state = listRef.current?.getState();
+    //const state = listRef.current?.getState();
 
     // check if state.sizes is same as height defined in data
     //const sameSizes = Object.entries(state?.sizes ?? {}).every(([key, size]) => size === data.find(item => item.id === key)?.height);
-    console.log('state', state);
+    //console.log('state', state);
+
+    listRef.current?.scrollToIndex({ index: data.length-10, animated: true });
   }, []);
 
   const keyExtractor = useCallback((item: Item) => item.id, []);
