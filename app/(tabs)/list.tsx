@@ -1,6 +1,6 @@
 import { LegendList, LegendListRef } from "@legendapp/list";
 import { useCallback, useRef } from "react";
-import { Button, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Button, StyleSheet, Text, View, ViewStyle, ViewToken } from "react-native";
 
 interface Item {
   id: string;
@@ -57,8 +57,15 @@ export default function ListScreen() {
     return undefined;
   }, []);
 
+  const onViewableItemsChanged = useCallback((info: {
+    viewableItems: ViewToken<Item>[];
+    changed: ViewToken<Item>[];
+  }) => {
+    console.log('onViewableItemsChanged', info.viewableItems.map(item => item.item.id));
+  }, []);
+
   return (
-    <View style={{flex: 1, backgroundColor: 'red'}}>
+    <View style={{flex: 1}}>
       <LegendList
         ref={listRef}
         data={data}
@@ -73,6 +80,7 @@ export default function ListScreen() {
         drawDistance={250}
         initialContainerPoolRatio={10}
         maintainVisibleContentPosition={true}
+        onViewableItemsChanged={onViewableItemsChanged}
       />
 
       <Button onPress={debug} title="Test" />
