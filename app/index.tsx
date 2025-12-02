@@ -72,21 +72,32 @@ function HomeScreenContent() {
   }, []);
 
   const scrollToEnd = useCallback(() => {
-    listRef.current?.scrollToEnd({ animated: false })
-    // Do another one just in case because the list may not have fully laid out yet
-    requestAnimationFrame(() => {
-      listRef.current?.scrollToEnd({ animated: false })
+    return new Promise<void>((resolve) => {
 
-      // and another one again in case
-      setTimeout(() => {
+      const state = listRef.current?.getState();
+      if(!state) return;
+
+      const distanceFromEnd =
+        state.contentLength - state.scroll - state.scrollLength;
+
+      if(distanceFromEnd===0) {
+        return resolve();
+      }
+
+      listRef.current?.scrollToEnd({ animated: false })
+      // Do another one just in case because the list may not have fully laid out yet
+      requestAnimationFrame(() => {
         listRef.current?.scrollToEnd({ animated: false })
 
-        // and yet another!
-        requestAnimationFrame(() => {
+        // and another one again in case
+        setTimeout(() => {
           listRef.current?.scrollToEnd({ animated: false })
-        })
-      }, 16)
-    })
+
+
+          resolve();
+        }, 16)
+      })
+    });
   }, []);
 
   const keyExtractor = useCallback((item: Item) => item.id, []);
@@ -99,9 +110,11 @@ function HomeScreenContent() {
     return undefined;
   }, []);
 
-  const scrollToLastMessage = useCallback(() => {
+  const scrollToLastMessage = useCallback(async () => {
     const startPos = scrollPos.value;
-    const intervalId = setInterval(() => {
+    await scrollToEnd();
+
+    let intervalId = setInterval(() => {
       requestAnimationFrame(() => {
         listRef.current?.scrollToEnd({ animated: true });
 
@@ -121,10 +134,10 @@ function HomeScreenContent() {
     setTimeout(() => {
       clearInterval(intervalId);
     }, 500);
-  }, [scrollPos]);
+  }, [scrollPos, scrollToEnd]);
 
 
-  const addItem = useCallback((text: string = 'Lege tekst') => {
+  const addItem = useCallback(async (text: string = 'Lege tekst') => {
     const id = randomUUID();
 
     const newDivider:Item = {
@@ -139,10 +152,12 @@ function HomeScreenContent() {
       type: 'text',
       text,
     }
+
+    await scrollToEnd();
     
     setData(prev => [...prev, newDivider, newItem]);
     scrollToLastMessage();
-  }, [scrollToLastMessage]);
+  }, [scrollToLastMessage, scrollToEnd]);
 
   
   const getEstimatedItemSize = useCallback((index: number, item: Item, type: string | undefined) => {
