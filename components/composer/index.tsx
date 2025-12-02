@@ -13,6 +13,7 @@ function ChatComposer(props: PropsWithChildren<ViewProps>) {
       onLayout(e);
     }
   }, [setComposerHeight, onLayout]);
+  
 
   return (
     <View {...props} onLayout={onLayoutHandler}>

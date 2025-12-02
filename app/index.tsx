@@ -1,4 +1,5 @@
 import ChatComposer from "@/components/composer";
+import AnimatedBottomInset from "@/components/composer/animatedBottomInset";
 import { ComposerHeightProvider, useComposerHeight } from "@/components/composer/composerHeightProvider";
 import ComposerSpacer from "@/components/composer/spacer";
 import { KeyboardAvoidingLegendList } from "@/components/keyboardList";
@@ -134,7 +135,7 @@ function HomeScreenContent() {
     setTimeout(() => {
       clearInterval(intervalId);
     }, 500);
-  }, [scrollPos, scrollToEnd]);
+  }, [scrollToEnd, scrollPos]);
 
 
   const addItem = useCallback(async (text: string = 'Lege tekst') => {
@@ -157,7 +158,8 @@ function HomeScreenContent() {
     
     setData(prev => [...prev, newDivider, newItem]);
     scrollToLastMessage();
-  }, [scrollToLastMessage, scrollToEnd]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollToLastMessage]);
 
   
   const getEstimatedItemSize = useCallback((index: number, item: Item, type: string | undefined) => {
@@ -189,7 +191,6 @@ function HomeScreenContent() {
           recycleItems={true}
           scrollPos={scrollPos}
           
-          //estimatedItemSize={10}
           getEstimatedItemSize={getEstimatedItemSize}
 
           getItemType={getItemType}
@@ -204,8 +205,9 @@ function HomeScreenContent() {
         </View>
 
         <KeyboardStickyView style={styles.chatInputContainer}>
-          <ChatComposer style={{padding: 10}}>
+          <ChatComposer style={{padding: 10, paddingBottom: 0}}>
             <TextInput style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
+            <AnimatedBottomInset />
           </ChatComposer>
         </KeyboardStickyView>
 
