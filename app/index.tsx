@@ -1,5 +1,4 @@
 import ChatComposer from "@/components/composer";
-import AnimatedBottomInset from "@/components/composer/animatedBottomInset";
 import { ComposerHeightProvider, useComposerHeight } from "@/components/composer/composerHeightProvider";
 import ComposerSpacer from "@/components/composer/spacer";
 import { KeyboardAvoidingLegendList } from "@/components/keyboardList";
@@ -7,7 +6,7 @@ import { LegendListRef } from "@legendapp/list";
 import { randomUUID } from "expo-crypto";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
-import { KeyboardProvider, KeyboardStickyView } from "react-native-keyboard-controller";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -204,12 +203,10 @@ function HomeScreenContent() {
         />}
         </View>
 
-        <KeyboardStickyView style={styles.chatInputContainer}>
-          <ChatComposer style={{padding: 10, paddingBottom: 0}}>
-            <TextInput style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
-            <AnimatedBottomInset />
-          </ChatComposer>
-        </KeyboardStickyView>
+        
+        <ChatComposer style={{padding: 10, paddingBottom: 0}} withBottomInset={10}>
+          <TextInput style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
+        </ChatComposer>
 
         <View style={styles.buttonContainer}>
           <SafeAreaView style={{flex: 1, flexDirection: 'row', gap: 10}}>
@@ -239,19 +236,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
   },
-  chatInputContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
   chatInput: {
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.5)',
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 100,
     color: 'white',
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderCurve: 'continuous',
+    
   },
 });
 
