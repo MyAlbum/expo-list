@@ -10,7 +10,7 @@ interface Item {
   type: 'divider' | 'item';
 }
 
-const defaultData = generateData(200);
+const defaultData = generateData(400);
 
 export default function ListScreen() {
   const [data, setData] = useState<Item[]>(defaultData);
@@ -50,13 +50,12 @@ export default function ListScreen() {
     listRef.current?.scrollToEnd({ animated: true });
   }, []);
 
-  const keyExtractor = useCallback((item: Item) => item.id, []);
-  const getItemType = useCallback((item: Item) => item.type, []);
-
-  const getEstimatedItemSize = useCallback((index: number) => {
-    return 200;
+  const scrollToIndex = useCallback((index: number) => {
+    listRef.current?.scrollToIndex({ index, animated: true });
   }, []);
 
+  const keyExtractor = useCallback((item: Item) => item.id, []);
+  const getItemType = useCallback((item: Item) => item.type, []);
   const getFixedItemSize = useCallback((index: number, item: Item) => {
     if(item.type === 'divider') {
       return 1;
@@ -89,6 +88,15 @@ export default function ListScreen() {
     setData(prev => [...prev, newDivider, newItem]);
   }, []);
 
+  const getEstimatedItemSize = useCallback((index: number, item: Item, type: string | undefined) => {
+    switch(type) {
+      case 'divider':
+        return 1;
+      default: // let op, voor unknown heights moet je een heeeeel laag getal pakken (max 5) anders bugt legendlist
+        return 5;
+    }
+  }, []);
+
   return (
     <View style={{flex: 1}}>
       <LegendList
@@ -98,16 +106,18 @@ export default function ListScreen() {
         keyExtractor={keyExtractor}
         initialScrollIndex={51}
         recycleItems={true}
-        getItemType={getItemType}
-        estimatedItemSize={5}
-        getFixedItemSize={getFixedItemSize}
+        
+        //estimatedItemSize={10}
         getEstimatedItemSize={getEstimatedItemSize}
+
+        getItemType={getItemType}
+        getFixedItemSize={getFixedItemSize}
         drawDistance={250}
         initialContainerPoolRatio={10}
         maintainVisibleContentPosition={true}
-        onViewableItemsChanged={onViewableItemsChanged}
-        maintainScrollAtEnd={true}
-        maintainScrollAtEndThreshold={10000}
+        //onViewableItemsChanged={onViewableItemsChanged}
+        //maintainScrollAtEnd={true}
+        //maintainScrollAtEndThreshold={1000000}
       />
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
