@@ -5,11 +5,13 @@ import { type Insets, type ScrollViewProps } from "react-native";
 import { useKeyboardHandler } from "react-native-keyboard-controller";
 import type Animated from "react-native-reanimated";
 import {
-  useAnimatedProps,
-  useAnimatedRef,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useSharedValue
+    SharedValue,
+    useAnimatedProps,
+    useAnimatedRef,
+    useAnimatedScrollHandler,
+    useAnimatedStyle,
+    useDerivedValue,
+    useSharedValue
 } from "react-native-reanimated";
 import type { ReanimatedScrollEvent } from "react-native-reanimated/lib/typescript/hook/commonTypes";
 
@@ -20,6 +22,7 @@ import { scheduleOnRN } from "react-native-worklets";
 
 type KeyboardControllerLegendListProps<ItemT> = Omit<AnimatedLegendListProps<ItemT>, "onScroll" | "contentInset"> & {
     onScroll?: (event: ReanimatedScrollEvent) => void;
+    scrollPos?: SharedValue<number>;
     contentInset?: Insets;
     safeAreaInsetBottom?: number;
 };
@@ -33,6 +36,8 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
         horizontal,
         onScroll: onScrollProp,
         safeAreaInsetBottom = 0,
+        keyboardDismissMode = "interactive",
+        scrollPos,
         ...rest
     } = props;
 
@@ -47,6 +52,12 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
     const keyboardHeight = useSharedValue(0);
     const isOpening = useSharedValue(false);
     const didInteractive = useSharedValue(false);
+
+    useDerivedValue(() => {
+        if(!scrollPos) return;
+        
+        scrollPos.value = scrollOffsetY.value;
+    }, [scrollPos, scrollOffsetY]);
 
     const scrollHandler = useAnimatedScrollHandler(
         (event) => {
@@ -170,14 +181,14 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
 
     return (
       <AnimatedLegendList
-          {...rest}
-          animatedProps={animatedProps}
-          keyboardDismissMode="interactive"
-          onScroll={scrollHandler as unknown as AnimatedLegendListProps<ItemT>["onScroll"]}
-          ref={combinedRef}
-          refScrollView={scrollViewRef}
-          scrollIndicatorInsets={{ bottom: 0, top: 0 }}
-          style={style}
+        {...rest}
+        animatedProps={animatedProps}
+        keyboardDismissMode={keyboardDismissMode}
+        onScroll={scrollHandler as unknown as AnimatedLegendListProps<ItemT>["onScroll"]}
+        ref={combinedRef}
+        refScrollView={scrollViewRef}
+        scrollIndicatorInsets={{ bottom: 0, top: 0 }}
+        style={style}
       />
     );
 });
