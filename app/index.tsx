@@ -1,27 +1,49 @@
+import ChatComposer from "@/components/composer";
+import { ComposerHeightProvider, useComposerHeight } from "@/components/composer/composerHeightProvider";
+import ComposerSpacer from "@/components/composer/spacer";
 import { KeyboardAvoidingLegendList } from "@/components/keyboardList";
 import { LegendListRef } from "@legendapp/list";
-import { useCallback, useRef, useState } from "react";
+import { randomUUID } from "expo-crypto";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
 import { KeyboardProvider, KeyboardStickyView } from "react-native-keyboard-controller";
 import { useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-let ids = 0;
-
 interface Item {
   id: string;
   height: number;
-  type: 'divider' | 'item' | 'text';
+  type: 'divider' | 'item' | 'text' | 'composer-spacer';
   text?: string;
 }
 
 const defaultData = generateData(400);
 
-export default function ListScreen() {
+
+export default function HomeScreen() {
+  return (
+    <ComposerHeightProvider>
+      <HomeScreenContent />
+    </ComposerHeightProvider>
+  );
+}
+
+function HomeScreenContent() {
   const [data, setData] = useState<Item[]>(defaultData);
   const listRef = useRef<LegendListRef>(null);
   const [text, setText] = useState('');
   const scrollPos = useSharedValue(0);
+  const { composerHeight } = useComposerHeight();
+
+  const extendedData = useMemo(() => {
+    const composerSpacer:Item = {
+      id: 'composer-spacer',
+      height: 0,
+      type: 'composer-spacer',
+    };
+
+    return [...data, composerSpacer];
+  }, [data]);
 
   const onTouchStart = useCallback((index: number) => {
     const state = listRef.current?.getState();
@@ -34,6 +56,10 @@ export default function ListScreen() {
       height: item.type === 'text' ? undefined : item.height,
     };
 
+    if(item.type === 'composer-spacer') {
+      return <ComposerSpacer />;
+    }
+
     return (
       <View style={[styles.item, myStyle]} onTouchStart={() => onTouchStart(index)}>
         <Text style={{ color: 'white' }}>{item.text ?? item.id}</Text>
@@ -42,12 +68,6 @@ export default function ListScreen() {
   }, [onTouchStart]);
 
   const debug = useCallback(() => {
-    //const state = listRef.current?.getState();
-
-    // check if state.sizes is same as height defined in data
-    //const sameSizes = Object.entries(state?.sizes ?? {}).every(([key, size]) => size === data.find(item => item.id === key)?.height);
-    //console.log('state', state);
-
     listRef.current?.scrollToIndex({ index: 50, animated: true });
   }, []);
 
@@ -105,16 +125,16 @@ export default function ListScreen() {
 
 
   const addItem = useCallback((text: string = 'Lege tekst') => {
-    ids++;
+    const id = randomUUID();
 
     const newDivider:Item = {
-      id: `new-divider-${ids.toString()}`,
+      id: `new-divider-${id.toString()}`,
       height: 1,
       type: 'divider',
     }
 
     const newItem:Item = {
-      id: `new-item-${ids.toString()}`,
+      id: `new-item-${id.toString()}`,
       height: Math.round(Math.random() * 500 + 100),
       type: 'text',
       text,
@@ -141,12 +161,13 @@ export default function ListScreen() {
     setText('');
   }, [addItem]);
 
+
   return (
     <KeyboardProvider>
       <View style={{flex: 1}}>
-        <KeyboardAvoidingLegendList
+        {composerHeight > 0 && <KeyboardAvoidingLegendList
           ref={listRef}
-          data={data}
+          data={extendedData}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           initialScrollIndex={51}
@@ -161,16 +182,16 @@ export default function ListScreen() {
           drawDistance={250}
           initialContainerPoolRatio={10}
           maintainVisibleContentPosition={true}
-          //onViewableItemsChanged={onViewableItemsChanged}
-          //maintainScrollAtEnd={true}
-          //maintainScrollAtEndThreshold={1000000}
-
+          
           keyboardDismissMode={"none"}
           keyboardShouldPersistTaps="always"
-        />
+        />}
+        </View>
 
-        <KeyboardStickyView style={styles.chatInputContainer} >
-          <TextInput style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
+        <KeyboardStickyView style={styles.chatInputContainer}>
+          <ChatComposer style={{padding: 10}}>
+            <TextInput style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
+          </ChatComposer>
         </KeyboardStickyView>
 
         <View style={styles.buttonContainer}>
@@ -180,7 +201,7 @@ export default function ListScreen() {
             <Button onPress={() => addItem()} title="Add item" />
           </SafeAreaView>
         </View>
-      </View>
+      
     </KeyboardProvider>
   );
 }
@@ -202,7 +223,6 @@ const styles = StyleSheet.create({
     right: 0,
   },
   chatInputContainer: {
-    padding: 10,
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -210,9 +230,11 @@ const styles = StyleSheet.create({
   },
   chatInput: {
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     padding: 10,
     borderRadius: 10,
+    color: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
 });
 

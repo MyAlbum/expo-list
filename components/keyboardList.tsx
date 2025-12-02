@@ -176,8 +176,8 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
 
     // contentInset is not supported on Android so we have to use marginBottom instead
     const style = useAnimatedStyle(() => ({
-        marginBottom: keyboardInset.value,
-    }));
+        marginBottom: keyboardInset.value + (contentInsetProp?.bottom ?? 0),
+    }), [keyboardInset, contentInsetProp]);
 
     return (
       <AnimatedLegendList
