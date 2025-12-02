@@ -1,5 +1,5 @@
+import { KeyboardAvoidingLegendList } from "@/components/keyboardList";
 import { LegendListRef } from "@legendapp/list";
-import { KeyboardAvoidingLegendList } from "@legendapp/list/keyboard";
 import { useCallback, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TextInput, View, ViewStyle } from "react-native";
 import { KeyboardProvider, KeyboardStickyView } from "react-native-keyboard-controller";
@@ -50,7 +50,21 @@ export default function ListScreen() {
   }, []);
 
   const scrollToEnd = useCallback(() => {
-    listRef.current?.scrollToEnd({ animated: true, viewOffset: -500 });
+    listRef.current?.scrollToEnd({ animated: false })
+    // Do another one just in case because the list may not have fully laid out yet
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToEnd({ animated: false })
+
+      // and another one again in case
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: false })
+
+        // and yet another!
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToEnd({ animated: false })
+        })
+      }, 16)
+    })
   }, []);
 
   const keyExtractor = useCallback((item: Item) => item.id, []);
@@ -85,7 +99,7 @@ export default function ListScreen() {
       case 'divider':
         return 1;
       default: // let op, voor unknown heights moet je een heeeeel laag getal pakken (max 5) anders bugt legendlist
-        return 5;
+        return 50;
     }
   }, []);
 
@@ -160,7 +174,7 @@ const styles = StyleSheet.create({
 });
 
 function generateData(length: number): Item[] {
-  return Array.from({ length }, (_, i) => {
+  const d: Item[] =  Array.from({ length }, (_, i) => {
     const id = i;
     const isEven = id % 2 === 0;
 
@@ -178,4 +192,6 @@ function generateData(length: number): Item[] {
       };
     }
   });
+
+  return d;
 }
