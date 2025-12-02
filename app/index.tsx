@@ -1,6 +1,9 @@
-import { LegendList, LegendListRef } from "@legendapp/list";
+import { LegendListRef } from "@legendapp/list";
+import { KeyboardAvoidingLegendList } from "@legendapp/list/keyboard";
 import { useCallback, useRef, useState } from "react";
-import { Button, StyleSheet, Text, View, ViewStyle, ViewToken } from "react-native";
+import { Button, StyleSheet, Text, TextInput, View, ViewStyle } from "react-native";
+import { KeyboardProvider, KeyboardStickyView } from "react-native-keyboard-controller";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 let ids = 0;
 
@@ -43,15 +46,11 @@ export default function ListScreen() {
     //const sameSizes = Object.entries(state?.sizes ?? {}).every(([key, size]) => size === data.find(item => item.id === key)?.height);
     //console.log('state', state);
 
-    listRef.current?.scrollToIndex({ index: data.length-10, animated: true });
+    listRef.current?.scrollToIndex({ index: 50, animated: true });
   }, []);
 
   const scrollToEnd = useCallback(() => {
-    listRef.current?.scrollToEnd({ animated: true });
-  }, []);
-
-  const scrollToIndex = useCallback((index: number) => {
-    listRef.current?.scrollToIndex({ index, animated: true });
+    listRef.current?.scrollToEnd({ animated: true, viewOffset: -500 });
   }, []);
 
   const keyExtractor = useCallback((item: Item) => item.id, []);
@@ -62,13 +61,6 @@ export default function ListScreen() {
     }
 
     return undefined;
-  }, []);
-
-  const onViewableItemsChanged = useCallback((info: {
-    viewableItems: ViewToken<Item>[];
-    changed: ViewToken<Item>[];
-  }) => {
-    console.log('onViewableItemsChanged', info.viewableItems.map(item => item.item.id));
   }, []);
 
   const addItem = useCallback(() => {
@@ -98,34 +90,42 @@ export default function ListScreen() {
   }, []);
 
   return (
-    <View style={{flex: 1}}>
-      <LegendList
-        ref={listRef}
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        initialScrollIndex={51}
-        recycleItems={true}
-        
-        //estimatedItemSize={10}
-        getEstimatedItemSize={getEstimatedItemSize}
+    <KeyboardProvider>
+      <View style={{flex: 1}}>
+        <KeyboardAvoidingLegendList
+          ref={listRef}
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          initialScrollIndex={51}
+          recycleItems={true}
+          
+          //estimatedItemSize={10}
+          getEstimatedItemSize={getEstimatedItemSize}
 
-        getItemType={getItemType}
-        getFixedItemSize={getFixedItemSize}
-        drawDistance={250}
-        initialContainerPoolRatio={10}
-        maintainVisibleContentPosition={true}
-        //onViewableItemsChanged={onViewableItemsChanged}
-        //maintainScrollAtEnd={true}
-        //maintainScrollAtEndThreshold={1000000}
-      />
+          getItemType={getItemType}
+          getFixedItemSize={getFixedItemSize}
+          drawDistance={250}
+          initialContainerPoolRatio={10}
+          maintainVisibleContentPosition={true}
+          //onViewableItemsChanged={onViewableItemsChanged}
+          //maintainScrollAtEnd={true}
+          //maintainScrollAtEndThreshold={1000000}
+        />
 
-      <View style={{ flexDirection: 'row', gap: 10 }}>
-        <Button onPress={debug} title="Test" />
-        <Button onPress={scrollToEnd} title="Scroll to end" />
-        <Button onPress={addItem} title="Add item" />
+        <KeyboardStickyView style={styles.chatInputContainer} >
+          <TextInput style={styles.chatInput} placeholder="Type your message..." />
+        </KeyboardStickyView>
+
+        <View style={styles.buttonContainer}>
+          <SafeAreaView style={{flex: 1, flexDirection: 'row', gap: 10}}>
+            <Button onPress={debug} title="Test" />
+            <Button onPress={scrollToEnd} title="Scroll to end" />
+            <Button onPress={addItem} title="Add item" />
+          </SafeAreaView>
+        </View>
       </View>
-    </View>
+    </KeyboardProvider>
   );
 }
 
@@ -135,6 +135,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     width: '100%',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  chatInputContainer: {
+    padding: 10,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  chatInput: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    padding: 10,
+    borderRadius: 10,
   },
 });
 

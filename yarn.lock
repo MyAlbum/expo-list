@@ -1390,10 +1390,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@legendapp/list@^2.0.16":
-  version "2.0.16"
-  resolved "https://registry.yarnpkg.com/@legendapp/list/-/list-2.0.16.tgz#9a805ec01c5bfb49be00889aea0b42de5c79249b"
-  integrity sha512-pFdeR0wpxCdpfHoHp5ghWBET/9vDxrG9curw+7xMoC8kHFogpn1TYJFwPV4xXrq9sLLA4MiwBPLQCvjHS5ruag==
+"@legendapp/list@^3.0.0-beta.7":
+  version "3.0.0-beta.7"
+  resolved "https://registry.yarnpkg.com/@legendapp/list/-/list-3.0.0-beta.7.tgz#3a4e3f750c909cf38b7c9593e1cf81b565ce9aea"
+  integrity sha512-/kExBBiDdunLFFKZ/zpnFfNiBLKAtaC1PGJJresL2tcjTTmSiCByNiKGYY6sbYqOHyChwBFkfgaAh2xpjIgDCg==
   dependencies:
     use-sync-external-store "^1.5.0"
 
@@ -5800,6 +5800,13 @@ react-native-is-edge-to-edge@^1.1.6, react-native-is-edge-to-edge@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/react-native-is-edge-to-edge/-/react-native-is-edge-to-edge-1.2.1.tgz#64e10851abd9d176cbf2b40562f751622bde3358"
   integrity sha512-FLbPWl/MyYQWz+KwqOZsSyj2JmLKglHatd3xLZWskXOpRaio4LfEDEz8E/A6uD8QoTHW6Aobw1jbEwK7KMgR7Q==
+
+react-native-keyboard-controller@^1.20.0:
+  version "1.20.0"
+  resolved "https://registry.yarnpkg.com/react-native-keyboard-controller/-/react-native-keyboard-controller-1.20.0.tgz#90f3bee37323e75cad697706a66c8ae4b164fa9c"
+  integrity sha512-4GiepBvpJdMKz++/8S/hfow/J/jttdg6Sg2kTHn/gF4mjdryJw8tVUgESBLU+TIgtaY/1oaNX4fizlmwsCIBxg==
+  dependencies:
+    react-native-is-edge-to-edge "^1.2.1"
 
 react-native-reanimated@~4.1.1:
   version "4.1.5"
