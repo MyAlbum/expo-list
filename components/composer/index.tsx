@@ -14,14 +14,15 @@ function ChatComposer(props: PropsWithChildren<Props>) {
   const { onLayout, withBottomInset } = props;
   const { setComposerHeight } = useComposerHeight();
   const insets = useSafeAreaInsets();
+  const inset = Math.max(withBottomInset ?? 0, insets.bottom);
 
   const onLayoutHandler = useCallback((e: LayoutChangeEvent) => {
-    setComposerHeight(e.nativeEvent.layout.height + insets.bottom);
+    setComposerHeight(e.nativeEvent.layout.height + inset);
 
     if (onLayout) {
       onLayout(e);
     }
-  }, [setComposerHeight, onLayout, insets.bottom]);
+  }, [setComposerHeight, onLayout, inset]);
 
   const keyboardProgress = useSharedValue(0);
   useKeyboardHandler(
@@ -49,7 +50,6 @@ function ChatComposer(props: PropsWithChildren<Props>) {
   );
 
   const animatedStyle = useAnimatedStyle(() => {
-    const inset = Math.max(withBottomInset ?? 0, insets.bottom);
     const p = interpolate(keyboardProgress.value, [0, 1], [inset, inset / 2]);
     return {
       transform: [{ translateY: - p }],
