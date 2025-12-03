@@ -4,6 +4,7 @@ import ComposerSpacer from "@/components/composer/spacer";
 import { KeyboardAvoidingLegendList } from "@/components/keyboardList";
 import { LegendListRef } from "@legendapp/list";
 import { randomUUID } from "expo-crypto";
+import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -34,6 +35,7 @@ function HomeScreenContent() {
   const [text, setText] = useState('');
   const scrollPos = useSharedValue(0);
   const { composerHeight } = useComposerHeight();
+  const router = useRouter();
 
   const extendedData = useMemo(() => {
     const composerSpacer:Item = {
@@ -213,6 +215,7 @@ function HomeScreenContent() {
             <Button onPress={debug} title="Test" />
             <Button onPress={scrollToEnd} title="Scroll to end" />
             <Button onPress={() => addItem()} title="Add item" />
+            <Button onPress={() => router.navigate('/_sitemap')} title="Chat Keyboard" />
           </SafeAreaView>
         </View>
       
