@@ -60,7 +60,6 @@ function ChatComposer(props: PropsWithChildren<Props>) {
     <KeyboardStickyView style={styles.chatInputContainer}>
       <Animated.View {...props} onLayout={onLayoutHandler} style={animatedStyle}>
         {props.children}
-
       </Animated.View>
     </KeyboardStickyView>
   );

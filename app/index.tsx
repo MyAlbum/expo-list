@@ -6,7 +6,7 @@ import { LegendListRef, ViewToken } from "@legendapp/list";
 import { randomUUID } from "expo-crypto";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Button, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
+import { Button, Platform, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { configureReanimatedLogger, useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,6 +40,7 @@ function HomeScreenContent() {
   const scrollPos = useSharedValue(0);
   const { composerHeight } = useComposerHeight();
   const router = useRouter();
+  const textInputRef = useRef<TextInput>(null);
 
   const extendedData = useMemo(() => {
     const composerSpacer: Item = {
@@ -185,6 +186,8 @@ function HomeScreenContent() {
     switch (type) {
       case 'divider':
         return 1;
+      case 'composer-spacer':
+        return composerHeight;
       case 'text':
         return 10;
       default: // let op, voor unknown heights moet je een heeeeel laag getal pakken (max 5) anders bugt legendlist
@@ -195,6 +198,13 @@ function HomeScreenContent() {
   const onSubmitEditing = useCallback((e: TextInputSubmitEditingEvent) => {
     addItem(e.nativeEvent.text);
     setText('');
+
+    if (Platform.OS === 'web') {
+      // bug in RN web, the text input loses focus despite the submitBehavior setting
+      requestAnimationFrame(() => {
+        textInputRef.current?.focus();
+      });
+    }
   }, [addItem]);
 
 
@@ -232,7 +242,7 @@ function HomeScreenContent() {
 
 
       <ChatComposer style={{ padding: 10, paddingBottom: 0 }} withBottomInset={10}>
-        <TextInput style={styles.chatInput} nativeID="chat-input" placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
+        <TextInput ref={textInputRef} style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
       </ChatComposer>
 
       <View style={styles.buttonContainer}>
