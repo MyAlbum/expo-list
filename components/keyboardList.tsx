@@ -54,8 +54,8 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
     const didInteractive = useSharedValue(false);
 
     useDerivedValue(() => {
-        if(!scrollPos) return;
-        
+        if (!scrollPos) return;
+
         scrollPos.value = scrollOffsetY.value;
     }, [scrollPos, scrollOffsetY]);
 
@@ -95,12 +95,14 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
                     scheduleOnRN(setScrollProcessingEnabled, false);
                 }
             },
-            onInteractive: () => {
+            onInteractive: (event) => {
                 "worklet";
 
                 if (!didInteractive.get()) {
                     didInteractive.set(true);
                 }
+
+                keyboardInset.value = Math.max(0, event.height - safeAreaInsetBottom);
             },
             onMove: (event) => {
                 "worklet";
@@ -139,7 +141,7 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
                     const targetOffset =
                         scrollOffsetAtKeyboardStart.value +
                         (vIsOpening ? vKeyboardHeight : -vKeyboardHeight) *
-                            (vIsOpening ? event.progress : 1 - event.progress);
+                        (vIsOpening ? event.progress : 1 - event.progress);
 
                     scrollOffsetY.value = targetOffset;
                     animatedOffsetY.set(targetOffset);
@@ -166,9 +168,9 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
                 animatedOffsetY.value === null
                     ? undefined
                     : {
-                          x: 0,
-                          y: animatedOffsetY.value,
-                      },
+                        x: 0,
+                        y: animatedOffsetY.value,
+                    },
         };
 
         return baseProps;
@@ -180,16 +182,16 @@ export const KeyboardAvoidingLegendList = (forwardRef as TypedForwardRef)(functi
     }), [keyboardInset, contentInsetProp]);
 
     return (
-      <AnimatedLegendList
-        {...rest}
-        animatedProps={animatedProps}
-        keyboardDismissMode={keyboardDismissMode}
-        onScroll={scrollHandler as unknown as AnimatedLegendListProps<ItemT>["onScroll"]}
-        ref={combinedRef}
-        refScrollView={scrollViewRef}
-        scrollIndicatorInsets={{ bottom: 0, top: 0 }}
-        style={style}
-      />
+        <AnimatedLegendList
+            {...rest}
+            animatedProps={animatedProps}
+            keyboardDismissMode={keyboardDismissMode}
+            onScroll={scrollHandler as unknown as AnimatedLegendListProps<ItemT>["onScroll"]}
+            ref={combinedRef}
+            refScrollView={scrollViewRef}
+            scrollIndicatorInsets={{ bottom: 0, top: 0 }}
+            style={style}
+        />
     );
 });
 

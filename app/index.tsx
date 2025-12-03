@@ -8,8 +8,12 @@ import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { useSharedValue } from "react-native-reanimated";
+import { configureReanimatedLogger, useSharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+configureReanimatedLogger({
+  strict: false,
+});
 
 interface Item {
   id: string;
@@ -38,7 +42,7 @@ function HomeScreenContent() {
   const router = useRouter();
 
   const extendedData = useMemo(() => {
-    const composerSpacer:Item = {
+    const composerSpacer: Item = {
       id: 'composer-spacer',
       height: 0,
       type: 'composer-spacer',
@@ -49,7 +53,7 @@ function HomeScreenContent() {
 
   const onTouchStart = useCallback((index: number) => {
     const state = listRef.current?.getState();
-    if(!state) return;
+    if (!state) return;
   }, []);
 
   const renderItem = useCallback(({ item, index }: { item: Item, index: number }) => {
@@ -58,11 +62,11 @@ function HomeScreenContent() {
       height: item.type === 'text' ? undefined : item.height,
     };
 
-    if(item.type === 'composer-spacer') {
+    if (item.type === 'composer-spacer') {
       return <ComposerSpacer />;
     }
 
-    if(item.type==='divider') {
+    if (item.type === 'divider') {
       return <View style={[styles.item, myStyle]} />
     }
 
@@ -81,12 +85,12 @@ function HomeScreenContent() {
     return new Promise<void>((resolve) => {
 
       const state = listRef.current?.getState();
-      if(!state) return;
+      if (!state) return;
 
       const distanceFromEnd =
         state.contentLength - state.scroll - state.scrollLength;
 
-      if(distanceFromEnd===0) {
+      if (distanceFromEnd === 0) {
         return resolve();
       }
 
@@ -109,7 +113,7 @@ function HomeScreenContent() {
   const keyExtractor = useCallback((item: Item) => item.id, []);
   const getItemType = useCallback((item: Item) => item.type, []);
   const getFixedItemSize = useCallback((index: number, item: Item) => {
-    if(item.type === 'divider') {
+    if (item.type === 'divider') {
       return 1;
     }
 
@@ -128,7 +132,7 @@ function HomeScreenContent() {
 
           // Check if we have scrolled past the start position
           const currentPos = scrollPos.value;
-          if(currentPos>startPos && Math.abs(currentPos-startPos) > 1) {
+          if (currentPos > startPos && Math.abs(currentPos - startPos) > 1) {
             clearInterval(intervalId);
           }
         });
@@ -143,7 +147,7 @@ function HomeScreenContent() {
 
   const autoScrollToLastMessage = useCallback(async () => {
     const state = listRef.current?.getState();
-    if(!state) return;
+    if (!state) return;
 
     const distanceFromEnd =
       state.contentLength - state.scroll - state.scrollLength
@@ -159,26 +163,26 @@ function HomeScreenContent() {
   const addItem = useCallback(async (text: string = 'Lege tekst') => {
     const id = randomUUID();
 
-    const newDivider:Item = {
+    const newDivider: Item = {
       id: `new-divider-${id.toString()}`,
       height: 1,
       type: 'divider',
     }
 
-    const newItem:Item = {
+    const newItem: Item = {
       id: `new-item-${id.toString()}`,
       height: Math.round(Math.random() * 500 + 100),
       type: 'text',
       text,
     }
-    
+
     setData(prev => [...prev, newDivider, newItem]);
     autoScrollToLastMessage();
   }, [autoScrollToLastMessage]);
 
-  
+
   const getEstimatedItemSize = useCallback((index: number, item: Item, type: string | undefined) => {
-    switch(type) {
+    switch (type) {
       case 'divider':
         return 1;
       case 'text':
@@ -201,7 +205,7 @@ function HomeScreenContent() {
 
   return (
     <KeyboardProvider>
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <KeyboardAvoidingLegendList
           //key={listKey}
           ref={listRef}
@@ -211,7 +215,7 @@ function HomeScreenContent() {
           initialScrollIndex={51}
           recycleItems={true}
           scrollPos={scrollPos}
-          
+
           getEstimatedItemSize={getEstimatedItemSize}
 
           getItemType={getItemType}
@@ -219,28 +223,27 @@ function HomeScreenContent() {
           drawDistance={250}
           initialContainerPoolRatio={10}
           maintainVisibleContentPosition={true}
-          
-          keyboardDismissMode={"none"}
-          keyboardShouldPersistTaps="always"
-          
-          //onViewableItemsChanged={onViewableItemsChanged}
+
+          keyboardDismissMode={"interactive"}
+        //keyboardShouldPersistTaps="always"
+        //onViewableItemsChanged={onViewableItemsChanged}
         />
-        </View>
+      </View>
 
-        
-        <ChatComposer style={{padding: 10, paddingBottom: 0}} withBottomInset={10}>
-          <TextInput style={styles.chatInput} placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
-        </ChatComposer>
 
-        <View style={styles.buttonContainer}>
-          <SafeAreaView style={{flex: 1, flexDirection: 'row', gap: 10}}>
-            <Button onPress={debug} title="Test" />
-            <Button onPress={scrollToEnd} title="Scroll to end" />
-            <Button onPress={() => addItem()} title="Add item" />
-            <Button onPress={() => router.navigate('/_sitemap')} title="Chat Keyboard" />
-          </SafeAreaView>
-        </View>
-      
+      <ChatComposer style={{ padding: 10, paddingBottom: 0 }} withBottomInset={10}>
+        <TextInput style={styles.chatInput} nativeID="chat-input" placeholder="Type your message..." onSubmitEditing={onSubmitEditing} submitBehavior="submit" value={text} onChangeText={setText} />
+      </ChatComposer>
+
+      <View style={styles.buttonContainer}>
+        <SafeAreaView style={{ flex: 1, flexDirection: 'row', gap: 10 }}>
+          <Button onPress={debug} title="Test" />
+          <Button onPress={scrollToEnd} title="Scroll to end" />
+          <Button onPress={() => addItem()} title="Add item" />
+          <Button onPress={() => router.navigate('/_sitemap')} title="Chat Keyboard" />
+        </SafeAreaView>
+      </View>
+
     </KeyboardProvider>
   );
 }
@@ -269,12 +272,12 @@ const styles = StyleSheet.create({
     color: 'white',
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderCurve: 'continuous',
-    
+
   },
 });
 
 function generateData(length: number): Item[] {
-  const d: Item[] =  Array.from({ length }, (_, i) => {
+  const d: Item[] = Array.from({ length }, (_, i) => {
     const id = i;
     const isEven = id % 2 === 0;
 

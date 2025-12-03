@@ -19,6 +19,10 @@ export default function AnimatedBottomInset(props: Props) {
       'worklet';
       progress.value = e.progress;
     },
+    onInteractive: (e) => {
+      'worklet';
+      progress.value = e.progress;
+    },
     onEnd: (e) => {
       'worklet';
       progress.value = e.progress;

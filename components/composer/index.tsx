@@ -1,7 +1,9 @@
 import { PropsWithChildren, useCallback } from "react";
-import { LayoutChangeEvent, StyleSheet, View, ViewProps } from "react-native";
-import { KeyboardStickyView } from "react-native-keyboard-controller";
-import AnimatedBottomInset from "./animatedBottomInset";
+import { LayoutChangeEvent, StyleSheet, ViewProps } from "react-native";
+import { useKeyboardHandler } from "react-native-keyboard-controller";
+import Animated, { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import KeyboardStickyView from "../keyboardSticky";
 import { useComposerHeight } from "./composerHeightProvider";
 
 type Props = ViewProps & {
@@ -9,25 +11,57 @@ type Props = ViewProps & {
 }
 
 function ChatComposer(props: PropsWithChildren<Props>) {
-  const {onLayout, withBottomInset} = props;
+  const { onLayout, withBottomInset } = props;
   const { setComposerHeight } = useComposerHeight();
-  
-  const onLayoutHandler = useCallback((e: LayoutChangeEvent) => {
-    setComposerHeight(e.nativeEvent.layout.height);
+  const insets = useSafeAreaInsets();
 
-    if(onLayout) {
+  const onLayoutHandler = useCallback((e: LayoutChangeEvent) => {
+    setComposerHeight(e.nativeEvent.layout.height + insets.bottom);
+
+    if (onLayout) {
       onLayout(e);
     }
-  }, [setComposerHeight, onLayout]);
-  
+  }, [setComposerHeight, onLayout, insets.bottom]);
+
+  const keyboardProgress = useSharedValue(0);
+  useKeyboardHandler(
+    {
+      onMove: (event) => {
+        'worklet';
+        keyboardProgress.value = event.progress;
+      },
+      onInteractive: (event) => {
+        'worklet';
+        keyboardProgress.value = event.progress;
+      },
+      onEnd: (event) => {
+        'worklet';
+        if (event.progress === 0 && event.target > 0) {
+          // After an interactive drag it can fire twice. The first one has progress 0 and target of a positive number.
+          // The second one has progress 0 and target -1, which is the real end. So we skip the first one.
+          return;
+        }
+
+        keyboardProgress.value = event.progress;
+      },
+    },
+    [],
+  );
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const inset = Math.max(withBottomInset ?? 0, insets.bottom);
+    const p = interpolate(keyboardProgress.value, [0, 1], [inset, inset / 2]);
+    return {
+      transform: [{ translateY: - p }],
+    };
+  }, []);
 
   return (
     <KeyboardStickyView style={styles.chatInputContainer}>
-      <View {...props} onLayout={onLayoutHandler}>
+      <Animated.View {...props} onLayout={onLayoutHandler} style={animatedStyle}>
         {props.children}
 
-        {withBottomInset!==undefined && <AnimatedBottomInset minHeight={withBottomInset} />}
-      </View>
+      </Animated.View>
     </KeyboardStickyView>
   );
 }
