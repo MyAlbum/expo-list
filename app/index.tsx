@@ -2,8 +2,9 @@ import ChatComposer from "@/components/composer";
 import { ComposerHeightProvider, useComposerHeight } from "@/components/composer/composerHeightProvider";
 import ComposerSpacer from "@/components/composer/spacer";
 import { KeyboardAvoidingLegendList } from "@/components/keyboardList";
-import { LegendListRef } from "@legendapp/list";
+import { LegendListRef, ViewToken } from "@legendapp/list";
 import { randomUUID } from "expo-crypto";
+import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button, StyleSheet, Text, TextInput, TextInputSubmitEditingEvent, View, ViewStyle } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -34,6 +35,7 @@ function HomeScreenContent() {
   const [text, setText] = useState('');
   const scrollPos = useSharedValue(0);
   const { composerHeight } = useComposerHeight();
+  const router = useRouter();
 
   const extendedData = useMemo(() => {
     const composerSpacer:Item = {
@@ -58,6 +60,10 @@ function HomeScreenContent() {
 
     if(item.type === 'composer-spacer') {
       return <ComposerSpacer />;
+    }
+
+    if(item.type==='divider') {
+      return <View style={[styles.item, myStyle]} />
     }
 
     return (
@@ -112,14 +118,13 @@ function HomeScreenContent() {
 
   const scrollToLastMessage = useCallback(async () => {
     const startPos = scrollPos.value;
-    await scrollToEnd();
 
     let intervalId = setInterval(() => {
       requestAnimationFrame(() => {
-        listRef.current?.scrollToEnd({ animated: true });
+        listRef.current?.scrollToEnd({ animated: false });
 
         requestAnimationFrame(() => {
-          listRef.current?.scrollToEnd({ animated: true });
+          listRef.current?.scrollToEnd({ animated: false });
 
           // Check if we have scrolled past the start position
           const currentPos = scrollPos.value;
@@ -134,7 +139,21 @@ function HomeScreenContent() {
     setTimeout(() => {
       clearInterval(intervalId);
     }, 500);
-  }, [scrollToEnd, scrollPos]);
+  }, [scrollPos]);
+
+  const autoScrollToLastMessage = useCallback(async () => {
+    const state = listRef.current?.getState();
+    if(!state) return;
+
+    const distanceFromEnd =
+      state.contentLength - state.scroll - state.scrollLength
+
+    // If the distance from the end is less than 20, scroll to the end and then scroll to the last message
+    if (distanceFromEnd <= 20) {
+      await scrollToEnd();
+      scrollToLastMessage();
+    }
+  }, [scrollToLastMessage, scrollToEnd]);
 
 
   const addItem = useCallback(async (text: string = 'Lege tekst') => {
@@ -152,13 +171,10 @@ function HomeScreenContent() {
       type: 'text',
       text,
     }
-
-    await scrollToEnd();
     
     setData(prev => [...prev, newDivider, newItem]);
-    scrollToLastMessage();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scrollToLastMessage]);
+    autoScrollToLastMessage();
+  }, [autoScrollToLastMessage]);
 
   
   const getEstimatedItemSize = useCallback((index: number, item: Item, type: string | undefined) => {
@@ -166,7 +182,7 @@ function HomeScreenContent() {
       case 'divider':
         return 1;
       case 'text':
-        return 1;
+        return 10;
       default: // let op, voor unknown heights moet je een heeeeel laag getal pakken (max 5) anders bugt legendlist
         return 50;
     }
@@ -178,10 +194,16 @@ function HomeScreenContent() {
   }, [addItem]);
 
 
+  const onViewableItemsChanged = useCallback((e: { viewableItems: ViewToken<Item>[]; changed: ViewToken<Item>[]; }) => {
+    console.log('info', e);
+  }, []);
+
+
   return (
     <KeyboardProvider>
       <View style={{flex: 1}}>
-        {composerHeight > 0 && <KeyboardAvoidingLegendList
+        <KeyboardAvoidingLegendList
+          //key={listKey}
           ref={listRef}
           data={extendedData}
           renderItem={renderItem}
@@ -200,7 +222,9 @@ function HomeScreenContent() {
           
           keyboardDismissMode={"none"}
           keyboardShouldPersistTaps="always"
-        />}
+          
+          //onViewableItemsChanged={onViewableItemsChanged}
+        />
         </View>
 
         
@@ -213,6 +237,7 @@ function HomeScreenContent() {
             <Button onPress={debug} title="Test" />
             <Button onPress={scrollToEnd} title="Scroll to end" />
             <Button onPress={() => addItem()} title="Add item" />
+            <Button onPress={() => router.navigate('/_sitemap')} title="Chat Keyboard" />
           </SafeAreaView>
         </View>
       
