@@ -265,10 +265,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderWidth: 1,
         borderColor: "rgba(0, 0, 0, 0.1)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 5,
+        boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)",
     },
 });
 
