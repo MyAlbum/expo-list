@@ -23,11 +23,11 @@ function ChatComposer(props: PropsWithChildren<Props>) {
 
   return (
     <KeyboardStickyView style={styles.chatInputContainer}>
-    <View {...props} onLayout={onLayoutHandler}>
-      {props.children}
+      <View {...props} onLayout={onLayoutHandler}>
+        {props.children}
 
-      {withBottomInset!==undefined && <AnimatedBottomInset minHeight={withBottomInset} />}
-    </View>
+        {withBottomInset!==undefined && <AnimatedBottomInset minHeight={withBottomInset} />}
+      </View>
     </KeyboardStickyView>
   );
 }
